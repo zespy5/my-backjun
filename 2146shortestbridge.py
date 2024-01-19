@@ -54,18 +54,70 @@ def find_sections():
     return lands
             
 lands = find_sections()
-
+    
 first_land = lands[0]
 
-around = set()
+arounds = []
 
-for x,y in first_land:
-    
-    for i,j in directions:
-        a,b = x+i,y+j
+for land in lands:
+    around = set()
+
+    for x,y in land:
         
-        if 0<=a<N and 0<=b<N and not island_map[a][b]:
-            around.add((a,b))
+        for i,j in directions:
+            a,b = x+i,y+j
             
-print(around)
+            if 0<=a<N and 0<=b<N and not island_map[a][b]:
+                around.add((a,b))
+    
+    arounds.append(around)
             
+
+minimum = INF
+
+def bfs(k):
+    global minimum
+    
+    visited = [[0]*N for _ in range(N)]
+    
+    que = deque()
+    for a,b in arounds[k]:
+        que.append((a,b))
+        visited[a][b] = 1
+        
+    while(que):
+        x,y = que.popleft()
+        
+        for i,j in directions:
+            nx, ny = x+i,y+j
+            
+            if nx < 0 or nx >= N or ny < 0 or ny >= N:
+                continue
+            
+            if island_map[nx][ny]:
+                continue
+            
+            nd = visited[x][y]+1
+            
+            if nd > minimum:
+                continue
+            
+            if visited[nx][ny] == 0 or visited[nx][ny] > nd:
+                visited[nx][ny] = nd
+                que.append((nx,ny))
+                
+    for i in range(len(arounds)):
+        if i == k:
+            continue
+        for a,b in arounds[i]:
+            if visited[a][b] == 0:
+                continue
+            if visited[a][b] < minimum:
+                minimum = visited[a][b]
+                
+for i in range(len(lands)):
+    bfs(i)
+
+print(minimum)
+  
+    
