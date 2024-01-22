@@ -13,21 +13,16 @@ island_map = [[*map(int, input().split())] for _ in range(N)]
 def find_sections():
     visited = [[0]*N for _ in range(N)]
     
-    lands = []
-    
-    def bfs(x,y):
+    def bfs(x,y,k):
         if not island_map[x][y]:
-            visited[x][y] = 1
-            return
+            return 0
         
         if visited[x][y]:
-            return
+            return 0
         
-        visitedset = set()
         que = deque()
         que.append((x,y))
-        visitedset.add((x,y))
-        visited[x][y] = 1
+        visited[x][y] = k
         
         while(que):
             a,b = que.popleft()
@@ -36,36 +31,66 @@ def find_sections():
                 nx,ny = a+i, b+j
                 if nx<0 or nx >= N or ny<0 or ny>=N:
                     continue
-                if (nx,ny) in visitedset:
+                if visited[nx][ny]:
                     continue
                 if island_map[nx][ny]:
                     que.append((nx,ny))
-                    visited[nx][ny] = 1
-                    visitedset.add((nx,ny))
+                    visited[nx][ny] = k
         
-        lands.append(visitedset)
-        
-        return
-    
+        return 1
+
+    areanum = 1
     for i in range(N):
         for j in range(N):
-            bfs(i,j)
+            if bfs(i,j, areanum):
+                areanum+=1
     
-    return lands
-            
-lands = find_sections()
+    return visited
 
-first_land = lands[0]
+sections = find_sections()
 
-around = set()
 
-for x,y in first_land:
+minimum = INF
+
+def find_shortest_path(x,y, m):
+    if sections[x][y] == 0:
+        return -1
     
-    for i,j in directions:
-        a,b = x+i,y+j
+    section_number = sections[x][y]
+    
+    visited = [[-1]*N for _ in range(N)]
+    
+    que = deque()
+    que.append((x,y))
+    visited[x][y] = 0
+    
+    while(que):
+        x,y = que.popleft()
         
-        if 0<=a<N and 0<=b<N and not island_map[a][b]:
-            around.add((a,b))
+        if visited[x][y] > m:
+            continue
+        
+        for i,j in directions:
+            nx, ny = x+i, y+j
             
-print(around)
+            if nx<0 or nx >= N or ny<0 or ny>=0:
+                continue
+            if section_number == sections[nx][ny]:
+                continue
+            if sections[nx][ny] > 0 and section_number != sections[nx][ny]:
+                return visited[x][y]
             
+            nd = visited[x][y]+1
+            if visited[nx][ny] == -1 or visited[nx][ny] > nd:
+                visited[nx][ny] = nd
+                que.append((nx,ny))
+    
+    return -1   
+            
+for i in range(N):
+    for j in range(N):
+
+        m = find_shortest_path(i,j,minimum)
+        print(m)
+
+print(minimum)
